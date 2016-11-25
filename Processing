@@ -1,0 +1,107 @@
+/**
+Motor Shield v 2.0
+Written By Prinzivalle Riccardo
+This program can control the rover throught a serial connection by bluetooth
+ */
+
+
+import processing.serial.*; 
+
+Serial ric; //Crea una nuova seriale
+PGraphics pg; //importa il motore grafico
+String mex = "Premi le frecce sulla tastiera per muovere il robot";
+int value = 0;
+int move;
+String myPort = "/dev/cu.HC-05-DevB"; //Scegli la porta da utilizzare
+//String myPort = "/dev/tty.usbmodem1421";
+int cm; 
+PFont f;
+
+
+void setup() 
+{
+  size(400, 600);
+  String portName = Serial.list()[0]; // fai la lista delle porte in caso di malfunzionamento
+  printArray(Serial.list());
+  ric = new Serial(this, myPort, 9600);
+  pg = createGraphics(400, 600);  //crea la grafica 
+   pg.beginDraw();
+  pg.background(255);
+  //pg.fill(204, 102, 0);
+  pg.fill(255, 0, 0);
+  pg.noStroke();
+  pg.triangle(200, 1, 100, 101, 300, 101);
+  pg.triangle(200,399,100,301,300,301);
+  pg.triangle(399,200,300,300,300,100);
+  pg.triangle(1,200,100,100,100,300);
+  pg.text(mex,50,500);
+  pg.endDraw();
+  f = createFont("Arial",16,true); //crea il font per la scritta
+  textFont(f,16);
+}
+
+void draw() 
+{
+  background(pg);
+ /* f = createFont("Arial",16,true);
+  textFont(f,16);*/
+  text(cm,60,550);
+switch(move){
+      case 0:
+         ric.write('f');
+          //background(pg);
+         break;
+      case 1:
+        ric.write('a');
+        triangle(200, 1, 100, 101, 300, 101);
+        fill(#006000);
+        break;
+      case 2:
+        ric.write('i');
+        triangle(200,399,100,301,300,301);
+        fill(#006000);
+        break;
+      case 3:
+        ric.write('d');
+        triangle(399,200,300,300,300,100);
+        fill(#006000);
+        break;
+      case 4:
+        ric.write('s');
+        triangle(1,200,100,100,100,300);
+        fill(#006000);
+        break;
+  }
+ if(ric.available()>0){
+   cm = ric.read();
+   //println(cm);
+   //f = createFont("Arial",16,true);
+   //textFont(f,16);
+  // fill(0);
+   text(cm,60,550);
+  // delay(100);
+  }
+}
+
+void keyPressed() {
+  switch(keyCode){
+        case UP:
+            move=1;
+            break;
+        case DOWN:
+            move=2;
+            break;
+        case RIGHT:
+            move=3;
+            break;
+        case LEFT:
+            move=4;
+            break;
+        default:
+            move=0;
+  }
+}
+void keyReleased(){
+  move=0;     
+  }
+  
