@@ -1,0 +1,120 @@
+/*
+Motor Shield v 2.0
+Written by Prinzivalle Riccardo
+*/
+
+const int motorPin = 3; // Seleziona il motore destro e ne decide la velocita
+const int oraryPin = 4; // seleziona il verso di polarizzazione del motore destro
+const int antioraryPin = 5; // seleziona il verso di polarizzazione del motore destro
+const int motorPin2 = 9; // Seleziona il motore sinistro e ne decide la velocita
+const int oraryPin2 = 10; // seleziona il verso di polarizzazione del motore sinistro
+const int antioraryPin2 = 11; // seleziona il verso di polarizzazione del motore sinistro
+const int pingPin = 12; // Pin del sensore ping
+int vel = 125; // Dato per immagazzinare il valore della velocita
+int dir = 0; // Dato per immagazinare la velocità
+long duration, cm; // Dato per immagazzinare il valore degli impulsi e della distanza del ping
+//long cmDestra; // Dato per immagazzinare il valore della distanza quando gira a destra
+//long cmSinistra; // Dato per immagazzinare il valore della distanza quando gira a sinistra
+//long previouscm; // Dato per immagazzinare il valore della distanza quando si ferma
+unsigned long currentmillis;
+unsigned long lastmillis = 0;
+const long interval = 500;
+
+long microsecondsToCentimeters(long microseconds) {// Trasforma la durata degli impulsi in cm  
+  return microseconds / 29 / 2;
+} 
+
+int avanti(){ // fa andare il robot avanti
+  digitalWrite(oraryPin, HIGH);
+  digitalWrite(antioraryPin, LOW);
+  digitalWrite(oraryPin2, HIGH);
+  digitalWrite(antioraryPin2, LOW);
+}
+
+int fermo(){ // blocca entrambe le ruote
+    digitalWrite(antioraryPin, LOW);
+    digitalWrite(oraryPin, LOW);
+    digitalWrite(antioraryPin2, LOW);
+    digitalWrite(oraryPin2, LOW);
+}
+
+int destra(){ // gira a destra
+  digitalWrite(antioraryPin, HIGH);
+  digitalWrite(oraryPin, LOW);
+  digitalWrite(antioraryPin2, LOW);
+  digitalWrite(oraryPin2, HIGH);
+}
+
+int sinistra(){ // gira a sinistra
+  digitalWrite(antioraryPin, LOW);
+  digitalWrite(oraryPin, HIGH);
+  digitalWrite(antioraryPin2, HIGH);
+  digitalWrite(oraryPin2, LOW);
+}
+
+int indietro(){ // vai indietro
+    digitalWrite(antioraryPin, HIGH);
+    digitalWrite(oraryPin, LOW);
+    digitalWrite(antioraryPin2, HIGH);
+    digitalWrite(oraryPin2, LOW);
+}
+
+long Ping(){ // calcola la distanza con il ping
+  //long duration, cm;
+  pinMode(pingPin, OUTPUT);
+  digitalWrite(pingPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pingPin, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pingPin, LOW);
+  pinMode(pingPin, INPUT);
+  duration = pulseIn(pingPin, HIGH);
+  cm = microsecondsToCentimeters(duration);
+  //delay(100);
+  }
+ 
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(motorPin, OUTPUT);
+  pinMode(oraryPin, OUTPUT);
+  pinMode(antioraryPin, OUTPUT);
+  pinMode(motorPin2, OUTPUT);
+  pinMode(oraryPin2, OUTPUT);
+  pinMode(antioraryPin2, OUTPUT);
+
+}
+
+void loop() {
+  currentmillis = millis();
+  if (currentmillis - lastmillis >= interval){// this statements becomes true after every 1 sec. Every 1 second the sensor data is sent over the serial. 
+     Ping(); 
+     Serial.write(cm);  
+     lastmillis = currentmillis; // Update lastmillis
+  }
+  if(Serial.available()>0){
+    dir = Serial.read();
+  }
+  analogWrite(motorPin, vel);//dai velocita al motore 1
+  analogWrite(motorPin2,vel);//dai velocita al motore 2
+  if(Serial.available()>0){
+    dir = Serial.read();
+  }
+  switch(dir){
+    case 'f':
+      fermo();
+      break;
+    case 'a':
+      avanti();
+      break;
+    case 'i':
+      indietro();
+      break;
+    case 's':
+      sinistra();
+      break;
+    case 'd':
+      destra();
+      break;      
+  }
+}
